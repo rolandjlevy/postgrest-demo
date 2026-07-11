@@ -1,0 +1,312 @@
+/* ---------------------------------------------------------------------------
+   A developer tool, so the design job is legibility of the request/response
+   cycle — not decoration. Ground: deep navy (Postgres's own blue, pushed dark).
+   Signal: teal for live/OK. Amber: reserved *exclusively* for the SQL panel,
+   which is the one idea this page exists to teach.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --ink: #0b1622;
+  --slate: #14243a;
+  --line: #22374f;
+  --mute: #6f8aa6;
+  --chalk: #d6e3f0;
+  --paper: #f6f4ef;
+
+  --signal: #14b8a6;
+  --amber: #e5a05a;
+  --rose: #e5646e;
+
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--ink);
+  color: var(--chalk);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* --- Top bar --- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 26px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.bar__id { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.bar__mark { color: var(--signal); font-size: 18px; line-height: 1; }
+.bar h1 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.bar p { margin: 0; font-size: 13px; color: var(--mute); }
+
+.conn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--mute);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 10px;
+}
+.conn__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mute); }
+.conn--up .conn__dot { background: var(--signal); animation: pulse 2s ease-in-out infinite; }
+.conn--up { color: var(--signal); border-color: rgba(20, 184, 166, 0.35); }
+.conn--down .conn__dot { background: var(--rose); }
+.conn--down { color: var(--rose); border-color: rgba(229, 100, 110, 0.35); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* --- Three-column working area --- */
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 0;
+}
+
+/* --- Catalogue --- */
+.cat {
+  border-right: 1px solid var(--line);
+  padding: 18px 0;
+  overflow-y: auto;
+}
+.cat__group { margin-bottom: 22px; }
+.cat__head {
+  margin: 0 0 8px;
+  padding: 0 18px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mute);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cat__head span { color: var(--line); text-transform: none; letter-spacing: 0.04em; font-size: 10.5px; }
+
+.cat__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 18px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--chalk);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.cat__item:hover { background: var(--slate); }
+.cat__item.is-on { background: var(--slate); border-left-color: var(--signal); }
+.cat__item:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+
+/* --- Method chips --- */
+.verb {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 5px;
+  border-radius: 2px;
+  flex: none;
+}
+.verb--get { background: rgba(20, 184, 166, 0.16); color: var(--signal); }
+.verb--post { background: rgba(229, 160, 90, 0.16); color: var(--amber); }
+.verb--lg { font-size: 11px; padding: 6px 9px; }
+
+/* --- Request pane --- */
+.req {
+  padding: 24px;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.req__wire { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.req__url {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  background: var(--slate);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+  color: var(--chalk);
+}
+.req__host { color: var(--mute); }
+
+.fire {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--signal);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  padding: 11px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  flex: none;
+}
+.fire:hover:not(:disabled) { filter: brightness(1.12); }
+.fire:disabled { opacity: 0.45; cursor: default; }
+.fire:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+/* --- THE SIGNATURE: the URL/SQL rosetta stone.
+       Amber appears nowhere else on the page. This is the one thing the
+       page is trying to teach: the querystring IS the query. --- */
+.rosetta {
+  border: 1px solid rgba(229, 160, 90, 0.3);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 3px 3px 0;
+  background: rgba(229, 160, 90, 0.05);
+  padding: 13px 16px;
+  margin-bottom: 18px;
+}
+.rosetta__tag {
+  margin: 0 0 9px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.rosetta__sql {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #f0d9bd;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.req__note {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--mute);
+  margin: 0 0 18px;
+  max-width: 62ch;
+}
+
+/* --- Editable request body --- */
+.body__tag {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.body textarea {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  background: var(--slate);
+  color: var(--chalk);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 12px;
+  resize: vertical;
+}
+.body textarea:focus { outline: none; border-color: var(--signal); }
+
+/* --- Response pane --- */
+.res { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+.res__idle {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--mute);
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.res__idle p { margin: 0; }
+
+.res__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.code {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+.code--ok { background: rgba(20, 184, 166, 0.16); color: var(--signal); }
+.code--bad { background: rgba(229, 100, 110, 0.16); color: var(--rose); }
+.code--expected { background: rgba(229, 160, 90, 0.16); color: var(--amber); }
+
+.res__time { font-family: var(--mono); font-size: 11.5px; color: var(--mute); }
+.res__expected { font-size: 12px; color: var(--amber); }
+
+.res__body {
+  flex: 1;
+  margin: 0;
+  padding: 20px 24px;
+  overflow: auto;
+  background: var(--paper);
+  color: #24313d;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1080px) {
+  .grid { grid-template-columns: 1fr; }
+  .cat {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 14px 18px;
+  }
+  .cat__group { margin-bottom: 0; min-width: 190px; }
+  .req { border-right: none; border-bottom: 1px solid var(--line); }
+  .res__body { max-height: 60vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conn--up .conn__dot { animation: none; }
+}

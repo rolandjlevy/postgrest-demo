@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgrest_demo_db
+    environment:
+      POSTGRES_DB: demo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Anything in /docker-entrypoint-initdb.d runs automatically on first boot.
+      # This is what creates the schema, roles, and RLS policies.
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: postgrest_demo_api
+    ports:
+      - "3000:3000"
+    environment:
+      # Connects as `authenticator` — the deliberately powerless role.
+      PGRST_DB_URI: postgres://authenticator:authpassword@db:5432/demo
+      # The ONE schema exposed over HTTP. Everything else is invisible.
+      PGRST_DB_SCHEMAS: api
+      # The role unauthenticated requests are switched into.
+      PGRST_DB_ANON_ROLE: web_anon
+      PGRST_SERVER_PORT: 3000
+      # Serves the OpenAPI spec at GET / describing every generated endpoint.
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
