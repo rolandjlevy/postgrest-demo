@@ -1,1 +1,15 @@
-
+{
+  "name": "postgrest-demo",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": false
+    }
+  },
+  "forwardPorts": [3000, 3001],
+  "portsAttributes": {
+    "3000": { "label": "PostgREST API", "visibility": "public" },
+    "3001": { "label": "Playground UI", "visibility": "public" }
+  },
+  "postCreateCommand": "cd web && npm install"
+}
